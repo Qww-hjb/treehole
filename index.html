@@ -34,10 +34,10 @@
         .card .title { font-size: 19px; font-weight: bold; color: #1565C0; }
         .card .desc { color: #888; font-size: 14px; margin-top: 4px; }
         .card .count { font-size: 13px; margin-top: 8px; }
+        .card.happy { border-left-color: #FF80AB; }
         .card.angry { border-left-color: #FF8A80; }
         .card.sad { border-left-color: #82B1FF; }
         .card.wish { border-left-color: #FFD54F; }
-        .card.happy { border-left-color: #FF80AB; }
         #page-detail { display: none; }
         .back-btn { font-size: 22px; cursor: pointer; color: #1565C0; margin-bottom: 10px; display: inline-block; }
         .detail-title { font-size: 20px; font-weight: bold; color: #1565C0; }
@@ -80,7 +80,6 @@
         <input class="input-box" id="login-password" type="password" placeholder="🔒 密码">
         <div class="error-msg" id="login-error">😅 账号或密码不对哦</div>
         <button class="btn" id="login-btn">🔑 登录树洞屋</button>
-        <div style="margin-top:16px;font-size:13px;color:#999;">测试账号 hjb / 密码 0410</div>
     </div>
 
     <!-- ===== 主页 ===== -->
@@ -156,7 +155,6 @@
     // 数据管理
     // ============================================================
     const DATA = {
-        // ---- 树洞内容 ----
         get(type) {
             const raw = localStorage.getItem('treehole_' + type);
             return raw ? JSON.parse(raw) : [];
@@ -175,7 +173,6 @@
             this.set(type, list);
         },
 
-        // ---- 留言：按内容绑定 ----
         getCommentsData(type) {
             const raw = localStorage.getItem('comments_data_' + type);
             return raw ? JSON.parse(raw) : {};
@@ -204,23 +201,14 @@
         }
     };
 
-    // ============================================================
-    // 当前选中的内容
-    // ============================================================
     let currentType = 'happy';
     let currentContent = '';
 
-    // ============================================================
-    // 页面切换
-    // ============================================================
     function showPage(id) {
         document.querySelectorAll('#app > div').forEach(el => el.style.display = 'none');
         document.getElementById(id).style.display = 'block';
     }
 
-    // ============================================================
-    // 更新数量
-    // ============================================================
     function updateCounts() {
         document.getElementById('count-happy').textContent = '已有 ' + DATA.get('happy').length + ' 个小快乐';
         document.getElementById('count-angry').textContent = '已有 ' + DATA.get('angry').length + ' 个小秘密';
@@ -228,9 +216,6 @@
         document.getElementById('count-wish').textContent = '已有 ' + DATA.get('wish').length + ' 颗流星';
     }
 
-    // ============================================================
-    // 获取标题
-    // ============================================================
     function getTitle(type) {
         const titles = {
             happy: '😊 开心树洞',
@@ -241,29 +226,6 @@
         return titles[type] || '树洞';
     }
 
-    function getEmoji(type) {
-        const emojis = {
-            happy: '😊',
-            angry: '😤',
-            sad: '😢',
-            wish: '🌠'
-        };
-        return emojis[type] || '📝';
-    }
-
-    function getColor(type) {
-        const colors = {
-            happy: '#FF80AB',
-            angry: '#FF8A80',
-            sad: '#82B1FF',
-            wish: '#FFD54F'
-        };
-        return colors[type] || '#4DB6AC';
-    }
-
-    // ============================================================
-    // 渲染留言 - 只显示当前内容的留言
-    // ============================================================
     function renderComments(type, content) {
         const container = document.getElementById('comment-list');
         const list = DATA.getCommentsByContent(type, content);
@@ -294,9 +256,6 @@
         });
     }
 
-    // ============================================================
-    // 进入详情页
-    // ============================================================
     function openDetail(type, content) {
         currentType = type;
         currentContent = content;
@@ -306,9 +265,6 @@
         showPage('page-detail');
     }
 
-    // ============================================================
-    // 渲染我的存档
-    // ============================================================
     function renderArchive() {
         const container = document.getElementById('archive-list');
         const types = ['happy', 'angry', 'sad', 'wish'];
@@ -349,9 +305,6 @@
         });
     }
 
-    // ============================================================
-    // 渲染全部存档
-    // ============================================================
     function renderAllArchive() {
         const container = document.getElementById('all-archive-list');
         const types = [
@@ -394,9 +347,7 @@
         container.innerHTML = html;
     }
 
-    // ============================================================
-    // 登录
-    // ============================================================
+    // ===== 登录 =====
     document.getElementById('login-btn').addEventListener('click', function() {
         const username = document.getElementById('login-username').value.trim();
         const password = document.getElementById('login-password').value.trim();
@@ -414,9 +365,7 @@
         if (e.key === 'Enter') document.getElementById('login-btn').click();
     });
 
-    // ============================================================
-    // 点击卡片进入详情（新建内容）
-    // ============================================================
+    // ===== 点击卡片 =====
     document.querySelectorAll('.card').forEach(card => {
         card.addEventListener('click', function() {
             const type = this.dataset.type;
@@ -429,9 +378,7 @@
         });
     });
 
-    // ============================================================
-    // 返回
-    // ============================================================
+    // ===== 返回 =====
     document.getElementById('detail-back').addEventListener('click', function() {
         showPage('page-home');
         updateCounts();
@@ -443,9 +390,7 @@
         showPage('page-home');
     });
 
-    // ============================================================
-    // 存档
-    // ============================================================
+    // ===== 存档 =====
     document.getElementById('detail-archive').addEventListener('click', function() {
         const content = document.getElementById('detail-content').value.trim();
         if (!content) {
@@ -458,9 +403,7 @@
         updateCounts();
     });
 
-    // ============================================================
-    // 删除
-    // ============================================================
+    // ===== 删除 =====
     document.getElementById('detail-delete').addEventListener('click', function() {
         const content = document.getElementById('detail-content').value.trim();
         if (!content) {
@@ -476,9 +419,7 @@
         updateCounts();
     });
 
-    // ============================================================
-    // 发送留言
-    // ============================================================
+    // ===== 留言 =====
     document.getElementById('comment-send').addEventListener('click', function() {
         const input = document.getElementById('comment-input');
         const text = input.value.trim();
@@ -500,25 +441,18 @@
         if (e.key === 'Enter') document.getElementById('comment-send').click();
     });
 
-    // ============================================================
-    // 我的存档
-    // ============================================================
+    // ===== 我的存档 =====
     document.getElementById('home-archive-btn').addEventListener('click', function() {
         renderArchive();
         showPage('page-archive');
     });
 
-    // ============================================================
-    // 全部存档
-    // ============================================================
+    // ===== 全部存档 =====
     document.getElementById('home-all-archive-btn').addEventListener('click', function() {
         renderAllArchive();
         showPage('page-all-archive');
     });
 
-    // ============================================================
-    // 启动
-    // ============================================================
     showPage('page-login');
 </script>
 
