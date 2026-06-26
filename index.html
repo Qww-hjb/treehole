@@ -46,28 +46,20 @@
         .comment-list { background: white; border-radius: 16px; padding: 10px 14px; min-height: 80px; margin-top: 8px; max-height: 280px; overflow-y: auto; }
         .comment-item { padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 15px; color: #333; word-break: break-all; white-space: pre-wrap; line-height: 1.6; display: flex; justify-content: space-between; align-items: center; }
         .comment-item:last-child { border-bottom: none; }
-        .delete-comment-btn { color: #FF6B6B; cursor: pointer; font-size: 14px; margin-left: 10px; }
+        .delete-comment-btn { color: #FF6B6B; cursor: pointer; font-size: 14px; padding: 4px 8px; }
         .comment-input-row { display: flex; gap: 10px; margin-top: 10px; }
         .comment-input-row input { flex: 1; padding: 12px 16px; border-radius: 30px; border: 1px solid #BBDEFB; font-size: 15px; outline: none; background: white; }
         .comment-input-row input:focus { border-color: #87CEEB; }
         .comment-input-row .btn { flex: 0 0 80px; font-size: 15px; padding: 12px; }
         #page-archive { display: none; }
         #page-all-archive { display: none; }
-        .archive-item { background: white; padding: 14px 18px; border-radius: 14px; margin-bottom: 10px; border-left: 4px solid #4DB6AC; font-size: 15px; color: #333; word-break: break-all; white-space: pre-wrap; line-height: 1.6; display: flex; justify-content: space-between; align-items: center; }
-        .delete-archive-btn { color: #FF6B6B; cursor: pointer; font-size: 14px; margin-left: 10px; }
+        .archive-item-card { background: white; padding: 14px 18px; border-radius: 14px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+        .archive-item-card:active { transform: scale(0.98); }
         .archive-empty { color: #999; text-align: center; padding: 30px 0; }
         .archive-section-title { font-weight: bold; margin: 14px 0 8px; font-size: 16px; }
         .btn-group { display: flex; gap: 10px; margin: 12px 0; }
         .btn-group .btn { flex: 1; font-size: 15px; padding: 12px; }
-        .all-archive-item { background: white; padding: 14px 18px; border-radius: 14px; margin-bottom: 10px; border-left: 4px solid #9575CD; font-size: 15px; color: #333; word-break: break-all; white-space: pre-wrap; line-height: 1.6; }
-        .all-archive-item .type-tag { display: inline-block; padding: 2px 12px; border-radius: 12px; font-size: 12px; color: white; margin-bottom: 6px; }
-        .all-archive-item .type-tag.angry { background: #FF8A80; }
-        .all-archive-item .type-tag.sad { background: #82B1FF; }
-        .all-archive-item .type-tag.wish { background: #FFD54F; color: #333; }
-        .comment-display { background: #f8f9fa; padding: 10px 16px; border-radius: 10px; margin-top: 4px; margin-bottom: 8px; }
-        .comment-display .title { font-size: 13px; color: #999; margin-bottom: 6px; }
-        .comment-display .item { font-size: 14px; color: #555; padding: 4px 0; border-bottom: 1px solid #eee; }
-        .comment-display .item:last-child { border-bottom: none; }
+        .all-archive-item { background: white; padding: 14px 18px; border-radius: 14px; margin-bottom: 10px; border-left: 4px solid #9575CD; }
     </style>
 </head>
 <body>
@@ -168,14 +160,6 @@
             list = list.filter(item => item !== content);
             this.set(type, list);
         },
-        clearAll() {
-            localStorage.removeItem('treehole_angry');
-            localStorage.removeItem('treehole_sad');
-            localStorage.removeItem('treehole_wish');
-            localStorage.removeItem('comments_angry');
-            localStorage.removeItem('comments_sad');
-            localStorage.removeItem('comments_wish');
-        },
         getComments(type) {
             const raw = localStorage.getItem('comments_' + type);
             return raw ? JSON.parse(raw) : [];
@@ -187,17 +171,24 @@
         }
     };
 
-    // 页面切换
     function showPage(id) {
         document.querySelectorAll('#app > div').forEach(el => el.style.display = 'none');
         document.getElementById(id).style.display = 'block';
     }
 
-    // 更新数量
     function updateCounts() {
         document.getElementById('count-angry').textContent = '已有 ' + DATA.get('angry').length + ' 个小秘密';
         document.getElementById('count-sad').textContent = '已有 ' + DATA.get('sad').length + ' 个小秘密';
         document.getElementById('count-wish').textContent = '已有 ' + DATA.get('wish').length + ' 颗流星';
+    }
+
+    function getTitle(type) {
+        const titles = {
+            angry: '😤 生气树洞',
+            sad: '😢 伤心树洞',
+            wish: '🌠 流星许愿屋'
+        };
+        return titles[type] || '树洞';
     }
 
     // 渲染留言（支持删除）
@@ -216,7 +207,8 @@
         ).join('');
 
         document.querySelectorAll('.delete-comment-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
                 const index = parseInt(this.dataset.index);
                 const comments = DATA.getComments(type);
                 const commentToDelete = comments[index];
@@ -230,7 +222,7 @@
         });
     }
 
-    // 渲染我的存档（支持单独删除）
+    // 渲染我的存档（点击进入详情页留言）
     function renderArchive() {
         const container = document.getElementById('archive-list');
         const angry = DATA.get('angry');
@@ -244,51 +236,47 @@
             if (angry.length > 0) {
                 html += '<div class="archive-section-title" style="color:#FF8A80;">😤 生气树洞（' + angry.length + '条）</div>';
                 angry.forEach((item, index) => { 
-                    html += '<div class="archive-item">' +
-                        '<span>' + (index+1) + '. ' + item + '</span>' +
-                        '<span class="delete-archive-btn" data-type="angry" data-index="' + index + '">🗑️</span>' +
+                    html += '<div class="archive-item-card" data-type="angry" data-content="' + encodeURIComponent(item) + '" style="background:white;padding:14px 18px;border-radius:14px;margin-bottom:10px;border-left:4px solid #FF8A80;cursor:pointer;">' +
+                        '<div>' + (index+1) + '. ' + item + '</div>' +
+                        '<div style="font-size:12px;color:#999;margin-top:4px;">💬 点击查看留言</div>' +
                     '</div>';
                 });
             }
             if (sad.length > 0) {
                 html += '<div class="archive-section-title" style="color:#82B1FF;">😢 伤心树洞（' + sad.length + '条）</div>';
                 sad.forEach((item, index) => { 
-                    html += '<div class="archive-item">' +
-                        '<span>' + (index+1) + '. ' + item + '</span>' +
-                        '<span class="delete-archive-btn" data-type="sad" data-index="' + index + '">🗑️</span>' +
+                    html += '<div class="archive-item-card" data-type="sad" data-content="' + encodeURIComponent(item) + '" style="background:white;padding:14px 18px;border-radius:14px;margin-bottom:10px;border-left:4px solid #82B1FF;cursor:pointer;">' +
+                        '<div>' + (index+1) + '. ' + item + '</div>' +
+                        '<div style="font-size:12px;color:#999;margin-top:4px;">💬 点击查看留言</div>' +
                     '</div>';
                 });
             }
             if (wish.length > 0) {
                 html += '<div class="archive-section-title" style="color:#FFD54F;">🌠 流星许愿屋（' + wish.length + '条）</div>';
                 wish.forEach((item, index) => { 
-                    html += '<div class="archive-item">' +
-                        '<span>' + (index+1) + '. ' + item + '</span>' +
-                        '<span class="delete-archive-btn" data-type="wish" data-index="' + index + '">🗑️</span>' +
+                    html += '<div class="archive-item-card" data-type="wish" data-content="' + encodeURIComponent(item) + '" style="background:white;padding:14px 18px;border-radius:14px;margin-bottom:10px;border-left:4px solid #FFD54F;cursor:pointer;">' +
+                        '<div>' + (index+1) + '. ' + item + '</div>' +
+                        '<div style="font-size:12px;color:#999;margin-top:4px;">💬 点击查看留言</div>' +
                     '</div>';
                 });
             }
         }
         container.innerHTML = html;
 
-        document.querySelectorAll('.delete-archive-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+        document.querySelectorAll('.archive-item-card').forEach(card => {
+            card.addEventListener('click', function() {
                 const type = this.dataset.type;
-                const index = parseInt(this.dataset.index);
-                const list = DATA.get(type);
-                const contentToDelete = list[index];
-                if (confirm('确定要删除这条存档吗？\n\n' + contentToDelete)) {
-                    list.splice(index, 1);
-                    DATA.set(type, list);
-                    renderArchive();
-                    updateCounts();
-                    alert('🗑️ 存档已删除！');
-                }
+                const content = decodeURIComponent(this.dataset.content);
+                currentType = type;
+                document.getElementById('detail-title').textContent = getTitle(type);
+                document.getElementById('detail-content').value = content;
+                renderComments(type);
+                showPage('page-detail');
             });
         });
     }
 
-    // 渲染全部存档
+    // 渲染全部存档（显示内容和留言）
     function renderAllArchive() {
         const container = document.getElementById('all-archive-list');
         const types = [
@@ -305,23 +293,23 @@
             const comments = DATA.getComments(t.key);
 
             if (contents.length > 0 || comments.length > 0) {
-                html += '<div style="margin-bottom:16px;">';
-                html += '<div style="font-weight:bold;font-size:16px;color:' + t.color + ';margin-bottom:8px;">' + t.emoji + ' ' + t.name + '</div>';
+                html += '<div style="margin-bottom:20px;background:white;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">';
+                html += '<div style="font-weight:bold;font-size:17px;color:' + t.color + ';margin-bottom:12px;">' + t.emoji + ' ' + t.name + '</div>';
 
-                contents.forEach((item, index) => {
-                    html += '<div class="all-archive-item">';
-                    html += '<span class="type-tag ' + t.key + '">' + t.emoji + ' ' + t.name + '</span>';
-                    html += '<div>' + (index+1) + '. ' + item + '</div>';
-                    html += '</div>';
-                });
+                if (contents.length > 0) {
+                    html += '<div style="font-size:13px;color:#999;margin-bottom:6px;">📝 内容 (' + contents.length + '条)</div>';
+                    contents.forEach((item, index) => {
+                        html += '<div style="background:#f8f9fa;padding:10px 14px;border-radius:8px;margin-bottom:6px;font-size:14px;color:#333;">' + (index+1) + '. ' + item + '</div>';
+                    });
+                }
 
                 if (comments.length > 0) {
-                    html += '<div class="comment-display">';
-                    html += '<div class="title">💬 留言 (' + comments.length + '条)</div>';
+                    html += '<div style="font-size:13px;color:#999;margin-top:10px;margin-bottom:6px;">💬 留言 (' + comments.length + '条)</div>';
                     comments.forEach((c, idx) => {
-                        html += '<div class="item">' + (idx+1) + '. ' + c + '</div>';
+                        html += '<div style="background:#f0f7ff;padding:8px 14px;border-radius:8px;margin-bottom:4px;font-size:14px;color:#555;">' + (idx+1) + '. ' + c + '</div>';
                     });
-                    html += '</div>';
+                } else {
+                    html += '<div style="font-size:13px;color:#ccc;margin-top:6px;">暂无留言</div>';
                 }
 
                 html += '</div>';
@@ -360,12 +348,7 @@
     document.querySelectorAll('.card').forEach(card => {
         card.addEventListener('click', function() {
             currentType = this.dataset.type;
-            const titles = {
-                angry: '😤 生气树洞',
-                sad: '😢 伤心树洞',
-                wish: '🌠 流星许愿屋'
-            };
-            document.getElementById('detail-title').textContent = titles[currentType];
+            document.getElementById('detail-title').textContent = getTitle(currentType);
             document.getElementById('detail-content').value = '';
             renderComments(currentType);
             showPage('page-detail');
@@ -439,7 +422,6 @@
         showPage('page-all-archive');
     });
 
-    // 启动
     showPage('page-login');
 </script>
 
