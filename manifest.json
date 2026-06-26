@@ -1,0 +1,21 @@
+{
+    "name": "树洞屋",
+    "short_name": "树洞屋",
+    "description": "钱老师和韩同学的秘密树洞屋",
+    "start_url": "/treehole/",
+    "display": "standalone",
+    "background_color": "#E3F2FD",
+    "theme_color": "#87CEEB",
+    "icons": [
+        {
+            "src": "icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

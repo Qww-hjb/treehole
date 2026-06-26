@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="/treehole/manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>🌸 秘密树洞屋</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #E3F2FD;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px 16px;
+        }
+        .app {
+            max-width: 420px;
+            width: 100%;
+            background: #E3F2FD;
+        }
+
+        #page-login {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+        }
+        #page-login .emoji-big {
+            font-size: 48px;
+        }
+        #page-login h1 {
+            font-size: 26px;
+            color: #1565C0;
+            margin-top: 8px;
+        }
+        #page-login .sub {
+            color: #1976D2;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .input-box {
+            width: 100%;
+            background: rgba(255,255,255,0.85);
+            border-radius: 30px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+            border: 1px solid #BBDEFB;
+            font-size: 16px;
+            outline: none;
+        }
+        .input-box:focus {
+            border-color: #87CEEB;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: #87CEEB;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(135, 206, 235, 0.4);
+            transition: 0.2s;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn-green {
+            background: #4DB6AC;
+        }
+        .btn-red {
+            background: #ef5350;
+        }
+        .btn-purple {
+            background: #9575CD;
+        }
+
+        .error-msg {
+            color: #ef5350;
+            font-size: 13px;
+            margin: 6px 0 10px;
+            display: none;
+        }
+
+        #page-home {
+            display: none;
+            padding-bottom: 30px;
+        }
+        .home-title {
+            text-align: center;
+            margin: 20px 0 10px;
+        }
+        .home-title .big {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1565C0;
+        }
+        .home-title .small {
+            color: #1976D2;
+            font-size: 15px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: 0.15s;
+            border-left: 6px solid #87CEEB;
+        }
+        .card:active {
+            transform: scale(0.97);
+        }
+        .card .title {
+            font-size: 19px;
+            font-weight: bold;
+            color: #1565C0;
+        }
+        .card .desc {
+            color: #888;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        .card .count {
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        .card.angry { border-left-color: #FF8A80; }
+        .card.sad   { border-left-color: #82B1FF; }
+        .card.wish  { border-left-color: #FFD54F; }
+
+        #page-detail {
+            display: none;
+        }
+        .back-btn {
+            font-size: 22px;
+            cursor: pointer;
+            color: #1565C0;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        .detail-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1565C0;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 14px;
+            border-radius: 16px;
+            border: 1px solid #BBDEFB;
+            font-size: 15px;
+            font-family: inherit;
+            background: white;
+            margin-top: 12px;
+            resize: vertical;
+            outline: none;
+        }
+        textarea:focus {
+            border-color: #87CEEB;
+        }
+
+        .row-btns {
+            display: flex;
+            gap: 10px;
+            margin: 12px 0 16px;
+        }
+        .row-btns .btn {
+            flex: 1;
+            font-size: 15px;
+            padding: 12px;
+        }
+
+        .comment-list {
+            background: white;
+            border-radius: 16px;
+            padding: 10px 14px;
+            min-height: 80px;
+            margin-top: 8px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        .comment-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 15px;
+            color: #333;
+            word-break: break-all;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .comment-input-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .comment-input-row input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 30px;
+            border: 1px solid #BBDEFB;
+            font-size: 15px;
+            outline: none;
+            background: white;
+        }
+        .comment-input-row input:focus {
+            border-color: #87CEEB;
+        }
+        .comment-input-row .btn {
+            flex: 0 0 80px;
+            font-size: 15px;
+            padding: 12px;
+        }
+
+        #page-archive {
+            display: none;
+        }
+        #page-all-archive {
+            display: none;
+        }
+        .archive-item {
+            background: white;
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4DB6AC;
+            font-size: 15px;
+            color: #333;
+            word-break: break-all;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        .archive-empty {
+            color: #999;
+            text-align: center;
+            padding: 30px 0;
+        }
+        .archive-section-title {
+            font-weight: bold;
+            margin: 14px 0 8px;
+            font-size: 16px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .btn-group .btn {
+            flex: 1;
+            font-size: 15px;
+            padding: 12px;
+        }
+        .all-archive-item {
+            background: white;
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            border-left: 4px solid #9575CD;
+            font-size: 15px;
+            color: #333;
+            word-break: break-all;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        .all-archive-item .type-tag {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: white;
+            margin-bottom: 6px;
+        }
+        .all-archive-item .type-tag.angry { background: #FF8A80; }
+        .all-archive-item .type-tag.sad { background: #82B1FF; }
+        .all-archive-item .type-tag.wish { background: #FFD54F; color: #333; }
+    </style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+    <!-- ===== 登录页 ===== -->
+    <div id="page-login">
+        <div class="emoji-big">🐻 💕 🐰</div>
+        <h1>秘密树洞屋</h1>
+        <div class="sub">钱老师和韩同学</div>
+        <input class="input-box" id="login-username" type="text" placeholder="👤 账号" value="hjb">
+        <input class="input-box" id="login-password" type="password" placeholder="🔒 密码" value="0410">
+        <div class="error-msg" id="login-error">😅 账号或密码不对哦</div>
+        <button class="btn" id="login-btn">🔑 登录树洞屋</button>
+        <div style="margin-top:16px;font-size:13px;color:#999;">测试账号 hjb / 密码 0410</div>
+    </div>
+
+    <!-- ===== 主页 ===== -->
+    <div id="page-home">
+        <div class="home-title">
+            <div class="small">🏠 欢迎来到</div>
+            <div class="big">钱老师和韩同学的秘密树洞屋</div>
+            <div style="width:60px;height:2px;background:#FFD700;margin:8px auto;"></div>
+        </div>
+
+        <div class="card angry" data-type="angry">
+            <div class="title">😤 生气树洞</div>
+            <div class="desc">把不开心丢进来吧</div>
+            <div class="count" id="count-angry">已有 0 个小秘密</div>
+        </div>
+
+        <div class="card sad" data-type="sad">
+            <div class="title">😢 伤心树洞</div>
+            <div class="desc">让眼泪变成星星</div>
+            <div class="count" id="count-sad">已有 0 个小秘密</div>
+        </div>
+
+        <div class="card wish" data-type="wish">
+            <div class="title">🌠 流星许愿屋</div>
+            <div class="desc">写下你的愿望吧</div>
+            <div class="count" id="count-wish">已有 0 颗流星</div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-green" id="home-archive-btn">📂 我的存档</button>
+            <button class="btn btn-purple" id="home-all-archive-btn">🌐 全部存档</button>
+        </div>
+
+        <div style="text-align:center;margin-top:20px;font-size:22px;color:#BBDEFB;">
+            ☁️ ☁️ ☁️
+        </div>
+    </div>
+
+    <!-- ===== 树洞详情 ===== -->
+    <div id="page-detail">
+        <span class="back-btn" id="detail-back">‹ 返回</span>
+        <div class="detail-title" id="detail-title">😤 生气树洞</div>
+        <textarea id="detail-content" placeholder="写下你的心情..."></textarea>
+        <div class="row-btns">
+            <button class="btn btn-green" id="detail-archive">💾 存档</button>
+            <button class="btn btn-red" id="detail-delete">🗑️ 删除</button>
+        </div>
+        <div style="font-weight:bold;color:#1565C0;margin-top:10px;">💬 留言板</div>
+        <div class="comment-list" id="comment-list">
+            <div class="comment-item" style="color:#999;text-align:center;padding:20px 0;">💬 还没有留言，写一条吧~</div>
+        </div>
+        <div class="comment-input-row">
+            <input id="comment-input" placeholder="写留言...">
+            <button class="btn" id="comment-send" style="background:#87CEEB;">发送</button>
+        </div>
+    </div>
+
+    <!-- ===== 我的存档 ===== -->
+    <div id="page-archive">
+        <span class="back-btn" id="archive-back">‹ 返回</span>
+        <div style="font-size:20px;font-weight:bold;color:#1565C0;margin:6px 0 16px;">📂 我的存档</div>
+        <div id="archive-list"></div>
+    </div>
+
+    <!-- ===== 全部存档 ===== -->
+    <div id="page-all-archive">
+        <span class="back-btn" id="all-archive-back">‹ 返回</span>
+        <div style="font-size:20px;font-weight:bold;color:#1565C0;margin:6px 0 16px;">🌐 全部存档</div>
+        <div style="font-size:13px;color:#999;margin-bottom:16px;">📌 这里显示所有树洞的存档内容和留言</div>
+        <div id="all-archive-list"></div>
+    </div>
+
+</div>
+
+<script>
+    // ============================================================
+    // 数据管理
+    // ============================================================
+    const DATA = {
+        get(type) {
+            const raw = localStorage.getItem('treehole_' + type);
+            return raw ? JSON.parse(raw) : [];
+        },
+        set(type, list) {
+            localStorage.setItem('treehole_' + type, JSON.stringify(list));
+        },
+        add(type, content) {
+            const list = this.get(type);
+            list.push(content);
+            this.set(type, list);
+        },
+        remove(type, content) {
+            let list = this.get(type);
+            list = list.filter(item => item !== content);
+            this.set(type, list);
+        },
+        clearAll() {
+            localStorage.removeItem('treehole_angry');
+            localStorage.removeItem('treehole_sad');
+            localStorage.removeItem('treehole_wish');
+            localStorage.removeItem('comments_angry');
+            localStorage.removeItem('comments_sad');
+            localStorage.removeItem('comments_wish');
+        },
+        getComments(type) {
+            const raw = localStorage.getItem('comments_' + type);
+            return raw ? JSON.parse(raw) : [];
+        },
+        addComment(type, text) {
+            const list = this.getComments(type);
+            list.push(text);
+            localStorage.setItem('comments_' + type, JSON.stringify(list));
+        }
+    };
+
+    // ============================================================
+    // 页面切换
+    // ============================================================
+    function showPage(id) {
+        document.querySelectorAll('#app > div').forEach(el => el.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+    }
+
+    // ============================================================
+    // 更新数量
+    // ============================================================
+    function updateCounts() {
+        document.getElementById('count-angry').textContent = '已有 ' + DATA.get('angry').length + ' 个小秘密';
+        document.getElementById('count-sad').textContent = '已有 ' + DATA.get('sad').length + ' 个小秘密';
+        document.getElementById('count-wish').textContent = '已有 ' + DATA.get('wish').length + ' 颗流星';
+    }
+
+    // ============================================================
+    // 渲染留言
+    // ============================================================
+    function renderComments(type) {
+        const container = document.getElementById('comment-list');
+        const list = DATA.getComments(type);
+        if (list.length === 0) {
+            container.innerHTML = '<div class="comment-item" style="color:#999;text-align:center;padding:20px 0;">💬 还没有留言，写一条吧~</div>';
+            return;
+        }
+        container.innerHTML = list.map((text, index) =>
+            '<div class="comment-item">' + (index+1) + '. ' + text + '</div>'
+        ).join('');
+    }
+
+    // ============================================================
+    // 渲染我的存档
+    // ============================================================
+    function renderArchive() {
+        const container = document.getElementById('archive-list');
+        const angry = DATA.get('angry');
+        const sad = DATA.get('sad');
+        const wish = DATA.get('wish');
+
+        let html = '';
+        if (angry.length === 0 && sad.length === 0 && wish.length === 0) {
+            html = '<div class="archive-empty">📭 还没有存档内容哦~</div>';
+        } else {
+            if (angry.length > 0) {
+                html += '<div class="archive-section-title" style="color:#FF8A80;">😤 生气树洞（' + angry.length + '条）</div>';
+                angry.forEach((item, index) => { 
+                    html += '<div class="archive-item">' + (index+1) + '. ' + item + '</div>'; 
+                });
+            }
+            if (sad.length > 0) {
+                html += '<div class="archive-section-title" style="color:#82B1FF;">😢 伤心树洞（' + sad.length + '条）</div>';
+                sad.forEach((item, index) => { 
+                    html += '<div class="archive-item">' + (index+1) + '. ' + item + '</div>'; 
+                });
+            }
+            if (wish.length > 0) {
+                html += '<div class="archive-section-title" style="color:#FFD54F;">🌠 流星许愿屋（' + wish.length + '条）</div>';
+                wish.forEach((item, index) => { 
+                    html += '<div class="archive-item">' + (index+1) + '. ' + item + '</div>'; 
+                });
+            }
+        }
+        container.innerHTML = html;
+    }
+
+    // ============================================================
+    // 渲染全部存档
+    // ============================================================
+    function renderAllArchive() {
+        const container = document.getElementById('all-archive-list');
+        const types = [
+            { key: 'angry', emoji: '😤', name: '生气树洞', color: '#FF8A80' },
+            { key: 'sad', emoji: '😢', name: '伤心树洞', color: '#82B1FF' },
+            { key: 'wish', emoji: '🌠', name: '流星许愿屋', color: '#FFD54F' }
+        ];
+
+        let html = '';
+        let total = 0;
+
+        types.forEach(t => {
+            const contents = DATA.get(t.key);
+            const comments = DATA.getComments(t.key);
+
+            if (contents.length > 0 || comments.length > 0) {
+                html += '<div style="margin-bottom:16px;">';
+                html += '<div style="font-weight:bold;font-size:16px;color:' + t.color + ';margin-bottom:8px;">' + t.emoji + ' ' + t.name + '</div>';
+
+                contents.forEach((item, index) => {
+                    html += '<div class="all-archive-item">';
+                    html += '<span class="type-tag ' + t.key + '">' + t.emoji + ' ' + t.name + '</span>';
+                    html += '<div>' + (index+1) + '. ' + item + '</div>';
+                    html += '</div>';
+                });
+
+                if (contents.length === 0 && comments.length > 0) {
+                    html += '<div class="all-archive-item">';
+                    html += '<span class="type-tag ' + t.key + '">' + t.emoji + ' ' + t.name + '</span>';
+                    html += '<div style="color:#999;">📝 暂无存档内容</div>';
+                    html += '</div>';
+                }
+
+                html += '</div>';
+                total += contents.length + comments.length;
+            }
+        });
+
+        if (total === 0) {
+            html = '<div class="archive-empty">📭 还没有任何存档内容哦~<br><span style="font-size:13px;">快去树洞里写点什么吧！</span></div>';
+        }
+
+        container.innerHTML = html;
+    }
+
+    // ============================================================
+    // 当前选中的类型
+    // ============================================================
+    let currentType = 'angry';
+
+    // ============================================================
+    // 登录
+    // ============================================================
+    document.getElementById('login-btn').addEventListener('click', function() {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+        const errorEl = document.getElementById('login-error');
+        if (username === 'hjb' && password === '0410') {
+            errorEl.style.display = 'none';
+            showPage('page-home');
+            updateCounts();
+        } else {
+            errorEl.style.display = 'block';
+        }
+    });
+
+    document.getElementById('login-password').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('login-btn').click();
+    });
+
+    // ============================================================
+    // 点击卡片进入详情
+    // ============================================================
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', function() {
+            currentType = this.dataset.type;
+            const titles = {
+                angry: '😤 生气树洞',
+                sad: '😢 伤心树洞',
+                wish: '🌠 流星许愿屋'
+            };
+            document.getElementById('detail-title').textContent = titles[currentType];
+            document.getElementById('detail-content').value = '';
+            renderComments(currentType);
+            showPage('page-detail');
+        });
+    });
+
+    // ============================================================
+    // 返回
+    // ============================================================
+    document.getElementById('detail-back').addEventListener('click', function() {
+        showPage('page-home');
+        updateCounts();
+    });
+
+    document.getElementById('archive-back').addEventListener('click', function() {
+        showPage('page-home');
+    });
+
+    document.getElementById('all-archive-back').addEventListener('click', function() {
+        showPage('page-home');
+    });
+
+    // ============================================================
+    // 存档
+    // ============================================================
+    document.getElementById('detail-archive').addEventListener('click', function() {
+        const content = document.getElementById('detail-content').value.trim();
+        if (!content) {
+            alert('请先写下内容哦~');
+            return;
+        }
+        DATA.add(currentType, content);
+        alert('💾 已存档！');
+        showPage('page-home');
+        updateCounts();
+    });
+
+    // ============================================================
+    // 删除
+    // ============================================================
+    document.getElementById('detail-delete').addEventListener('click', function() {
+        const content = document.getElementById('detail-content').value.trim();
+        if (!content) {
+            alert('请先写下要删除的内容~');
+            return;
+        }
+        DATA.remove(currentType, content);
+        alert('🗑️ 已删除！');
+        showPage('page-home');
+        updateCounts();
+    });
+
+    // ============================================================
+    // 留言
+    // ============================================================
+    document.getElementById('comment-send').addEventListener('click', function() {
+        const input = document.getElementById('comment-input');
+        const text = input.value.trim();
+        if (!text) {
+            alert('请输入留言内容~');
+            return;
+        }
+        DATA.addComment(currentType, '🌸 你：' + text);
+        input.value = '';
+        renderComments(currentType);
+    });
+
+    document.getElementById('comment-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('comment-send').click();
+    });
+
+    // ============================================================
+    // 我的存档
+    // ============================================================
+    document.getElementById('home-archive-btn').addEventListener('click', function() {
+        renderArchive();
+        showPage('page-archive');
+    });
+
+    // ============================================================
+    // 全部存档
+    // ============================================================
+    document.getElementById('home-all-archive-btn').addEventListener('click', function() {
+        renderAllArchive();
+        showPage('page-all-archive');
+    });
+
+    // ============================================================
+    // 启动
+    // ============================================================
+    showPage('page-login');
+</script>
+
+</body>
+</html>
